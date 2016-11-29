@@ -59,7 +59,9 @@ h = '''Seattle's mild, ___1___ marine climate allows year-round outdoor recreati
 
 h_key = ("Hard Answer Key:", "temperate", "walk", "Discovery", "Edwards", "Alki", "Burke", "Works", "Union", "Cascade", "Puget", "fittest")
 
-total_guesses = 15
+total_guesses = 15 # Sets the max number of incorrect guesses allowed in the whole game.
+
+individual_guesses = 5 # Sets the max number of incorrect guesses allowed for each blank.
 
 # This function handles the beginning of the UI for this game.
 def interface():
@@ -71,16 +73,16 @@ def interface():
             while toggle:
                 uInput2 = raw_input("\nPlease select a game difficulty by typing it in. > ").lower()
                 if uInput2 in ("e", "easy", "simple", "tall", "short" "small", "low"):
-                    gameplay("EASY", e)
+                    gameplay("EASY", e, answers)
                     return
                 elif uInput2 in ("m", "medium", "middle", "average", "grande", "doubleshot", "mid", "okay", "ok"):
-                    gameplay("MEDIUM", m)
+                    gameplay("MEDIUM", m, answers)
                     return
                 elif uInput2 in ("h", "hard", "high", "difficult", "venti", "expert", "complex", "tough", "large",):
-                    gameplay("HARD", h)
+                    gameplay("HARD", h, answers)
                     return
                 elif uInput2 == "sample":
-                    gameplay("SAMPLE", s)
+                    gameplay("SAMPLE", s, answers)
                     return
                 else:
                     print 'Your response was not recognized as "easy", "medium", or "hard" please try again.'
@@ -94,21 +96,20 @@ def interface():
             print '\nYour response was not recognized as a "Yes" or "No", please try again.'
 
 # This function handles the core gameplay elements of cycling through the paragraph looking for blanks and announcing when they win.
-def gameplay(difficulty, selectedParagraph):
-    print "You've selected {0} mode!\n\nYou will get 5 guesses per question, or {1} incorrect guesses total, whichever comes first.\n\nHere is the {0} difficulty paragraph.  Please fill in all the numbered blanks by answering the following questions.\n".format(difficulty, total_guesses)
-    global answers
+def gameplay(difficulty, selectedParagraph, answers):
+    print "You've selected {0} mode!\n\nYou will get {1} guesses per question, or {2} incorrect guesses total, whichever comes first.\n\nHere is the {0} difficulty paragraph.  Please fill in all the numbered blanks by answering the following questions.\n".format(difficulty, individual_guesses, total_guesses)
     replaced = []
     replaced = selectedParagraph.split()
     num = 1
     while "___{0}___".format(num) in replaced:
         print " ".join(replaced)
-        fillIn(replaced, num, difficulty)
+        fillIn(replaced, num, difficulty, individual_guesses)
         num += 1
     print "\nCongratulations!  You win!!!\n\nHere's the correct statement:\n"
     print " ".join(replaced) + "\n"
 
 # This function handles what happens when they guess correctly or incorrectly.
-def fillIn(replaced, num, difficulty):
+def fillIn(replaced, num, difficulty, individual_guesses):
     index = -1
     global total_guesses
     for word in replaced:
@@ -120,12 +121,12 @@ def fillIn(replaced, num, difficulty):
             while guess is False:
                 guesses += 1
                 total_guesses -= 1
-                if (guesses == 5) or (total_guesses == 0):
+                if (guesses == individual_guesses) or (total_guesses == 0):
                     raise SystemExit("\nGame Over! You have failed too many guesses.")
-                elif (guesses == 4) or (total_guesses == 1):
+                elif (guesses == (individual_guesses - 1)) or (total_guesses == 1):
                     print "\nThat still isn't the correct answer. Warning! This is your last try.  Make it count!"
                 else:
-                    print "\nThat isn't the correct answer. You have {0} trys left and {1} total trys left.".format((5 - guesses), (total_guesses))
+                    print "\nThat isn't the correct answer. You have {0} trys left and {1} total trys left.".format((individual_guesses - guesses), (total_guesses))
                 guess = guessing(num, difficulty)
             if guess:
                 answer = setAnswer(num, difficulty)
