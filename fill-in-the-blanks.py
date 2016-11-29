@@ -42,7 +42,7 @@ s_key = (" ", "function", "arguments", "none", "list")
 
 import time
 
-answers = open("answers.txt", "a")
+log = open("answers.txt", "a")
 
 e = '''Living in the (abbreviation) ___1___ is a privilege in many ways; from the gorgeous scenery to the sense of community, the ___2___ has much to offer its residents. Many individuals who work in the ___3___ ___4___ have also discovered that ___5___ is rapidly being recognized as a ___3___ hub – this is just one more reason to live in Washington State. ___5___ is now home to some of the most successful companies and brands in the ___4___, including Apple, Microsoft, Facebook, and Twitter. If you’re in the ___3___ ___4___ or plan to be after college, you may want to consider the following reasons that ___5___ has risen as a premiere destination for ___3___ ___4___ professionals: \n1: ___5___ is Unique Unto Itself \n2: Working for the Major Players \n3: ___6___ May Have a Better Chance of Survival \n4: ___3___ Conferences'''
 # Credit to http://talkingdigital.org/the-rise-of-seattle-as-a-tech-hub/
@@ -59,7 +59,9 @@ h = '''Seattle's mild, ___1___ marine climate allows year-round outdoor recreati
 
 h_key = ("Hard Answer Key:", "temperate", "walk", "Discovery", "Edwards", "Alki", "Burke", "Works", "Union", "Cascade", "Puget", "fittest")
 
-total_guesses = 15
+total_guesses = 15 # Sets the max number of incorrect guesses allowed in the whole game.
+
+individual_guesses = 5 # Sets the max number of incorrect guesses allowed for each blank.
 
 # This function handles the beginning of the UI for this game.
 def interface():
@@ -95,20 +97,19 @@ def interface():
 
 # This function handles the core gameplay elements of cycling through the paragraph looking for blanks and announcing when they win.
 def gameplay(difficulty, selectedParagraph):
-    print "You've selected {0} mode!\n\nYou will get 5 guesses per question, or {1} incorrect guesses total, whichever comes first.\n\nHere is the {0} difficulty paragraph.  Please fill in all the numbered blanks by answering the following questions.\n".format(difficulty, total_guesses)
-    global answers
+    print "You've selected {0} mode!\n\nYou will get {1} guesses per question, or {2} incorrect guesses total, whichever comes first.\n\nHere is the {0} difficulty paragraph.  Please fill in all the numbered blanks by answering the following questions.\n".format(difficulty, individual_guesses, total_guesses)
     replaced = []
     replaced = selectedParagraph.split()
     num = 1
     while "___{0}___".format(num) in replaced:
         print " ".join(replaced)
-        fillIn(replaced, num, difficulty)
+        fillIn(replaced, num, difficulty, individual_guesses)
         num += 1
     print "\nCongratulations!  You win!!!\n\nHere's the correct statement:\n"
     print " ".join(replaced) + "\n"
 
 # This function handles what happens when they guess correctly or incorrectly.
-def fillIn(replaced, num, difficulty):
+def fillIn(replaced, num, difficulty, individual_guesses):
     index = -1
     global total_guesses
     for word in replaced:
@@ -120,12 +121,12 @@ def fillIn(replaced, num, difficulty):
             while guess is False:
                 guesses += 1
                 total_guesses -= 1
-                if (guesses == 5) or (total_guesses == 0):
+                if (guesses == individual_guesses) or (total_guesses == 0):
                     raise SystemExit("\nGame Over! You have failed too many guesses.")
-                elif (guesses == 4) or (total_guesses == 1):
+                elif (guesses == (individual_guesses - 1)) or (total_guesses == 1):
                     print "\nThat still isn't the correct answer. Warning! This is your last try.  Make it count!"
                 else:
-                    print "\nThat isn't the correct answer. You have {0} trys left and {1} total trys left.".format((5 - guesses), (total_guesses))
+                    print "\nThat isn't the correct answer. You have {0} trys left and {1} total trys left.".format((individual_guesses - guesses), (total_guesses))
                 guess = guessing(num, difficulty)
             if guess:
                 answer = setAnswer(num, difficulty)
@@ -144,7 +145,7 @@ def guessing(num, difficulty):
     if attempt == setAnswer(num, difficulty).lower():
         return True
     else:
-        answers.write(time.strftime("%c") + " | {0}{1} | incorrect answer: ".format(difficulty[0], num) + attempt + "\n")
+        log.write(time.strftime("%c") + " | {0}{1} | incorrect answer: ".format(difficulty[0], num) + attempt + "\n")
         return False
 
 # This function handles filling in all the remaining blanks of the same word once they've guessed the first instance correctly.
@@ -176,6 +177,6 @@ def setAnswer(num, difficulty):
         return answer
     else:
         print "Unexpected Result"
-        answers.write(time.strftime("%c") + " | UR | setAnswer: " + difficulty + " " + num + "\n")
+        log.write(time.strftime("%c") + " | UR | setAnswer: " + difficulty + " " + num + "\n")
 
 interface()
